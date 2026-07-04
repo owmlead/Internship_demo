@@ -11,7 +11,7 @@ logger.add("log/log_cil.txt", rotation="500 MB", retention="10 days")
 @click.command()
 @click.option('--directory', '-d', default='.', help='目标目录，默认为当前目录')
 @click.option('--pattern', '-p', default='.*', help='使用正则表达式匹配文件名）')
-@click.option('--replace', '-r', help='将文件名中的旧字符串替换为空（删除）')
+@click.option('--replace', '-r', help='将文件名中的旧字符串替换')
 @click.option('--prefix', help='添加前缀')
 @click.option('--suffix', help='添加后缀（在扩展名之前）')
 @click.option('--recursive', is_flag=True, help='是否递归处理子目录')
@@ -20,19 +20,12 @@ logger.add("log/log_cil.txt", rotation="500 MB", retention="10 days")
 def files_rename(directory: str, pattern: str,replace, prefix, suffix, recursive: bool,
                  force: bool ):
     """
-       批量重命名文件工具。使用glob通配符进行匹配
+       批量重命名文件工具。使用正则表达式进行匹配
     """
 
-    if  replace=='':
-        click.echo(f"无需修改")
-        return
-    else:
-        if not bool(replace):
-            replace = ''
 
     try:
         re_pattern =re.compile(pattern)
-        re_replace =re.compile(replace)
     except re.error as e:
         logger.error(f"e,正则表达式错误")
         return
@@ -53,7 +46,7 @@ def files_rename(directory: str, pattern: str,replace, prefix, suffix, recursive
             if file.is_file() and re_pattern.search(file.name):
                 file_path_list.append(file)
 
-    if not bool(replace) + bool(prefix) + bool(suffix) <= 1:
+    if not (bool(replace) + bool(prefix) + bool(suffix)) <= 1:
         click.echo(f"只能选择一项重命名操作")
         return
     if bool(replace) + bool(prefix) + bool(suffix) == 0:
@@ -64,17 +57,19 @@ def files_rename(directory: str, pattern: str,replace, prefix, suffix, recursive
         new_file_name = file.name
         file_dir = os.path.dirname(file)
         if bool(replace):
-            new_file_name = re_replace.sub( '', file.name)
+            new_file_name = re_pattern.sub(replace, file.name)
         if bool(prefix):
             new_file_name = prefix + file.name
         if bool(suffix):
             new_file_name = file.stem + suffix + file.suffix
         if new_file_name == file.name:
             continue
-        if os.path.isfile(os.path.join(file_dir,new_file_name)):
-            if not force:
-                if not click.confirm(f"{new_file_name}已经存在.是否覆盖:"):
-                    continue
+        f=os.path.join(file_dir, new_file_name)
+        if os.path.exists(f):
+            if os.path.isdir(f):
+                continue
+            if not force and not click.confirm(f"{new_file_name}已经存在.是否覆盖:"):
+                continue
         try:
             os.replace(file, os.path.join(file_dir, new_file_name))
             logger.success(f"{os.path.join(file_dir,file.name)}已成功重命名为 '{new_file_name}'")
