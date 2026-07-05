@@ -33,7 +33,7 @@ yy = countdown(1)
 def logging_write(message):
     if not os.path.exists("./log"):
         os.mkdir('./log')
-    with FileContext('./log/log.txt', 'a', encode="utf-8") as f:
+    with FileContext('./log/log.log', 'a', encode="utf-8") as f:
         print(message)
         f.write(f"{next(yy)}:{message}")
 

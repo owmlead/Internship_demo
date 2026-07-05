@@ -5,7 +5,7 @@ from pydantic import validate_call, ValidationError
 from loguru import logger
 from pathlib import Path
 
-logger.add("log/log_cil.txt", rotation="500 MB", retention="10 days")
+logger.add("log/log_cil.log", rotation="500 MB", retention="10 days")
 
 
 @click.command()
@@ -17,24 +17,21 @@ logger.add("log/log_cil.txt", rotation="500 MB", retention="10 days")
 @click.option('--recursive', is_flag=True, help='是否递归处理子目录')
 @click.option('--force', is_flag=True, help='强制覆盖已存在的文件')
 @validate_call
-def files_rename(directory: str, pattern: str,replace, prefix, suffix, recursive: bool,
-                 force: bool ):
+def files_rename(directory: str, pattern: str, replace: str | None, prefix: str | None, suffix: str | None,
+                 recursive: bool,
+                 force: bool):
     """
        批量重命名文件工具。使用正则表达式进行匹配
     """
-
-
     try:
-        re_pattern =re.compile(pattern)
+        re_pattern = re.compile(pattern)
     except re.error as e:
-        logger.error(f"e,正则表达式错误")
+        logger.error(f"{e},正则表达式错误")
         return
-
     file_path_list = []
-    if not os.path.exists(directory):
+    if not os.path.isdir(directory):
         click.echo(f"目录不存在")
         return
-
     if recursive:
         files_path_list = Path(directory).rglob("*")
         for file in files_path_list:
@@ -45,18 +42,16 @@ def files_rename(directory: str, pattern: str,replace, prefix, suffix, recursive
         for file in files_path_list:
             if file.is_file() and re_pattern.search(file.name):
                 file_path_list.append(file)
-
     if not (bool(replace) + bool(prefix) + bool(suffix)) <= 1:
         click.echo(f"只能选择一项重命名操作")
         return
-    if bool(replace) + bool(prefix) + bool(suffix) == 0:
+    if (bool(replace) + bool(prefix) + bool(suffix) == 0) and replace != '':
         click.echo(f"修改方式未选择,未修改")
         return
-
     for file in file_path_list:
         new_file_name = file.name
         file_dir = os.path.dirname(file)
-        if bool(replace):
+        if bool(replace) or replace == '':
             new_file_name = re_pattern.sub(replace, file.name)
         if bool(prefix):
             new_file_name = prefix + file.name
@@ -64,7 +59,7 @@ def files_rename(directory: str, pattern: str,replace, prefix, suffix, recursive
             new_file_name = file.stem + suffix + file.suffix
         if new_file_name == file.name:
             continue
-        f=os.path.join(file_dir, new_file_name)
+        f = os.path.join(file_dir, new_file_name)
         if os.path.exists(f):
             if os.path.isdir(f):
                 continue
@@ -72,10 +67,11 @@ def files_rename(directory: str, pattern: str,replace, prefix, suffix, recursive
                 continue
         try:
             os.replace(file, os.path.join(file_dir, new_file_name))
-            logger.success(f"{os.path.join(file_dir,file.name)}已成功重命名为 '{new_file_name}'")
+            logger.success(f"{os.path.join(file_dir, file.name)}已成功重命名为 '{new_file_name}'")
         except Exception as e:
             logger.error(e)
             click.echo(f"{file.name}重命名操作失败")
+
     return
 
 
