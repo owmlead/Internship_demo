@@ -12,6 +12,7 @@ import socket
 import sys
 import threading
 
+import click
 from loguru import logger
 
 # 配置网络
@@ -200,17 +201,18 @@ class Client:
         os._exit(0)
 
 
+@click.command()
+@click.option("--mode", "-m", default="c", help="启动方式")
+def start(mode):
+    if mode == "server"or mode == "s":
+        Server().start()
+    elif mode == "client"or mode == "c":
+        Client().start()
+    else:
+        print(f"未知模式: {mode}")
+
 if __name__ == "__main__":
     """
     测试
     """
-    if len(sys.argv) < 2:
-        sys.exit(0)
-
-    mode = sys.argv[1].lower()
-    if mode == "server":
-        Server().start()
-    elif mode == "client":
-        Client().start()
-    else:
-        print(f"未知模式: {mode}")
+    start()
