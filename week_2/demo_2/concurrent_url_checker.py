@@ -12,21 +12,33 @@ URLS = [
     "https://www.github.com",
     "https://www.zhihu.com",
     "https://www.bilibili.com",
+    "https://noobdream.com/",
+    "https://www.luogu.com.cn/"
 ]
 
 REQUEST_TIMEOUT = 10  # 请求超时时间（秒）
 
 
 class HttpChecker:
-    """并发检查多个 URL 的 HTTP 状态码。"""
+    """
+    并发检查多个 URL 的 HTTP 状态码。
+    """
 
     def __init__(self, url_list: list[str]):
-        self.url_list = url_list
-        self._threads: list[threading.Thread] = []
+        """
+        初始化检查列表
+        :param url_list: # 待检查的 URL 列表
+        """
+        self.url_list = url_list                   # 待检查的 URL 列表
+        self._threads: list[threading.Thread] = [] # 检查线程列表
 
     @staticmethod
     def url_status(url: str) -> None:
-        """获取并打印 *url* 的 HTTP 状态码。"""
+        """
+        获取并打印URL的 HTTP 状态码。
+        :param url: 需要检查的URL
+        :return: None
+        """
         try:
             r = requests.head(url, timeout=REQUEST_TIMEOUT)
             print(f"{url}  状态码: {r.status_code}")
@@ -34,7 +46,11 @@ class HttpChecker:
             print(f"{url}  错误: {e}")
 
     def start(self) -> None:
-        """为每个 URL 启动一个线程，然后等待全部完成。"""
+        """
+        为每个 URL 启动一个线程，然后等待全部完成。
+        :return: None
+        """
+
         self._threads = []
         for url in self.url_list:
             t = threading.Thread(target=self.url_status, args=(url,))
@@ -46,5 +62,8 @@ class HttpChecker:
 
 
 if __name__ == "__main__":
+    """
+    测试
+    """
     checker = HttpChecker(URLS)
     checker.start()
