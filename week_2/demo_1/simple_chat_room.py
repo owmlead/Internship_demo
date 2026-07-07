@@ -14,23 +14,36 @@ import threading
 
 from loguru import logger
 
-HOST = "localhost"
-PORT = 8080
+# 配置网络
+HOST = "localhost"  #ip
+PORT = 8080         #端口号
 BUFFER_SIZE = 4096  # 接收缓冲区大小
-
+#配置日志
+os.makedirs("./log", exist_ok=True)
+logger.add("log/log.log", rotation="500 MB", retention="10 days")
 
 class Server:
-    """TCP 聊天服务器 — 每个客户端一个线程。"""
+    """
+    聊天服务器 — 每个客户端一个线程。
+    """
 
     def __init__(self, host: str = HOST, port: int = PORT):
-        self.clients: dict[socket.socket, str] = {}
-        self.host = host
-        self.port = port
-        self.lock = threading.Lock()
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        """
+        初始化ip和端口号
+        :param host:ip
+        :param port:端口号
+        """
+        self.clients: dict[socket.socket, str] = {} #聊天室在线列表
+        self.host = host                            #聊天室IP
+        self.port = port                            #聊天室端口号
+        self.lock = threading.Lock()                #锁,避免写入聊天室列表出错
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #聊天室套接字
 
     def start(self) -> None:
-        """绑定端口、监听，并在循环中接受客户端连接。"""
+        """
+        绑定端口、监听，并在循环中接受客户端连接,并分配线程。
+        :return: None
+        """
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)
         logger.info(f"服务器启动在 {HOST}:{PORT} 上, 等待连接")
@@ -50,7 +63,12 @@ class Server:
             self.server_socket.close()
 
     def handle_client(self, client: socket.socket, addr: tuple) -> None:
-        """处理一个客户端连接（在独立线程中运行）。"""
+        """
+        理单个客户端连接（在独立线程中运行）。
+        :param client: 客户端套接字
+        :param addr: 客户端ip信息
+        :return:None
+        """
         nickname = ""
         try:
             nickname = client.recv(BUFFER_SIZE).decode("utf-8").strip()
@@ -84,7 +102,12 @@ class Server:
             client.close()
 
     def broadcast(self, message: str, sender: socket.socket | None = None) -> None:
-        """向所有已连接客户端广播 *message*，排除 *sender*。"""
+        """
+        向所有已连接客户端广播消息，排除发送者。
+        :param message: 消息
+        :param sender: 发送者
+        :return: None
+        """
         with self.lock:
             snapshot = list(self.clients.items())
         encoded = message.encode("utf-8")
@@ -105,20 +128,34 @@ class Server:
 
 
 class Client:
-    """TCP 聊天客户端。"""
+    """
+    TCP 聊天客户端。
+    """
 
     def __init__(self, host: str = HOST, port: int = PORT):
+        """
+        初始化连接信息
+        :param host:连接ip
+        :param port: 连接端口号
+        """
         self.host = host
         self.port = port
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #套接字配置
 
     @staticmethod
     def _random_name() -> str:
-        """生成一个简短的随机游客名称。"""
+        """
+        生成一个简短的随机游客名称。
+        :return: 一个随机名称
+        """
         return f"游客_{random.randint(1000, 9999)}"
 
     def start(self) -> None:
-        """连接服务器并启动收发循环。"""
+        """
+        连接服务器并启动收发循环。
+        :return: None
+        """
+
         try:
             self.socket.connect((self.host, self.port))
         except ConnectionRefusedError as e:
@@ -145,7 +182,10 @@ class Client:
             self.socket.close()
 
     def receive(self) -> None:
-        """接收线程 — 打印来自服务器的消息。"""
+        """
+        接收线程 — 接收来自服务器的消息。
+        :return: None
+        """
         while True:
             try:
                 data = self.socket.recv(BUFFER_SIZE)
@@ -161,6 +201,9 @@ class Client:
 
 
 if __name__ == "__main__":
+    """
+    测试
+    """
     if len(sys.argv) < 2:
         sys.exit(0)
 
