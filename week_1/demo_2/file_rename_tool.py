@@ -12,11 +12,20 @@ import click
 from loguru import logger
 from pydantic import ValidationError, validate_call
 
+
+# 配置日志
+os.makedirs("./log", exist_ok=True)
 logger.add("log/log.log", rotation="500 MB", retention="10 days")
 
 
 def _count_operations(replace: str | None, prefix: str | None, suffix: str | None) -> int:
-    """返回当前激活的重命名操作数量（非 None 且非空）。"""
+    """
+    返回当前激活的重命名操作数量（非 None 且非空）。
+    :param replace:替换操作
+    :param prefix:加前缀操作
+    :param suffix:加后缀操作
+    :return:启用数量
+    """
     return sum(1 for v in (replace, prefix, suffix) if v)
 
 
@@ -38,9 +47,18 @@ def rename_files(
     recursive: bool,
     force: bool,
 ) -> None:
-    """使用正则表达式批量重命名文件。
+    """
+    使用正则表达式批量重命名文件。
 
     必须且只能选择 --replace、--prefix、--suffix 中的一项。
+    :param directory: 文件目录路径
+    :param pattern: 匹配文件名,使用正则表达式
+    :param replace: 将正则表达式匹配到的部分替换为replace
+    :param prefix: 为匹配到的部分添加前缀prefix
+    :param suffix: 为匹配到的部分添加后缀suffix
+    :param recursive: 是否处理子目录
+    :param force: 是否强制覆盖同名文件
+    :return:
     """
     # 编译正则表达式
     try:
@@ -103,6 +121,9 @@ def rename_files(
 
 
 if __name__ == "__main__":
+    """
+    测试
+    """
     try:
         rename_files()
     except ValidationError as e:

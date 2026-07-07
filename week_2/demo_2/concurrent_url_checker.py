@@ -2,7 +2,6 @@
 
 使用 threading 并发发送 HEAD 请求。
 """
-
 import threading
 
 import requests

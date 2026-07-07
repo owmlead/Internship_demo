@@ -13,47 +13,78 @@ os.makedirs("./log", exist_ok=True)
 logger.add("./log/log.log", rotation="1 MB", retention=5, level="ERROR")
 
 
-# ---------------------------------------------------------------------------
-# 基本算术运算
-# ---------------------------------------------------------------------------
-
 
 def add(a: float, b: float) -> float:
+    """
+    加法
+    :param a: 加数
+    :param b: 被加数
+    :return: 和
+    """
     return a + b
 
 
 def sub(a: float, b: float) -> float:
+    """
+    减法
+    :param a: 减数
+    :param b: 被减数
+    :return: 差
+    """
     return b - a
 
 
 def mul(a: float, b: float) -> float:
+    """
+    乘法
+    :param a: 乘数
+    :param b: 被乘数
+    :return: 积
+    """
     return a * b
 
 
 def div(a: float, b: float) -> float:
+    """
+    除法
+    :param a: 除数
+    :param b: 被除数
+    :return:商
+    """
     if a == 0:
         raise ZeroDivisionError("除数不能为0")
     return b / a
 
 
 def exp(a: float, b: float) -> float:
+    """
+    幂运算
+    :param a: 指数
+    :param b: 底数
+    :return:幂
+    """
     return b ** a
 
 
 def mod(a: float, b: float) -> float:
+    """
+    模运算
+    :param a:模数
+    :param b:被模数
+    :return:余数
+    """
     if a == 0:
         raise ZeroDivisionError("取余运算的除数不能为0")
     return b % a
 
 
-# ---------------------------------------------------------------------------
-# 运算符调度
-# ---------------------------------------------------------------------------
-
-
 class Operator:
-    """可调用对象，分发到对应的算术函数。"""
+    """
+    可调用对象，分发到对应的算术函数。
+    """
 
+
+    # 操作符字典
     _operations = {
         "+": add,
         "-": sub,
@@ -64,28 +95,44 @@ class Operator:
     }
 
     def __init__(self, op: str):
+        """
+        初始化操作函数
+        :param op:
+        """
         self._op = op
 
     def __call__(self, a: float, b: float) -> float:
+        """
+        策略模式,动态调用函数
+        :param a: 操作数
+        :param b: 操作数
+        :return: 操作结果
+        """
         return self._operations[self._op](a, b)
 
 
 def _calculate(a: float, b: float, op: str) -> float:
-    """对操作数 *a* 和 *b* 应用运算符 *op*。"""
+    """
+    对操作数a和b应用运算符op
+    :param a: 操作数
+    :param b: 操作数
+    :param op: 运算符
+    :return: 运算结果
+    """
     return Operator(op)(a, b)
 
 
-# ---------------------------------------------------------------------------
-# 表达式解析器 / 求值器（调度场算法）
-# ---------------------------------------------------------------------------
 
 
 def evaluate(expression: str) -> float:
-    """解析并计算算术表达式。
+    """
+    解析并计算算术表达式(使用调度场算法)。
 
     返回数值结果，输入不合法时抛出 ValueError 或 SyntaxError。
 
     支持: ``+`` ``-`` ``*`` ``/`` ``^`` ``%`` ``(`` ``)`` 以及小数。
+    :param expression: 计算式
+    :return: 计算结果
     """
     allowed_chars = set("0123456789.+-*/^%()")  # 合法输入字符集
     precedence = {"+": 1, "-": 1, "*": 2, "/": 2, "^": 3, "%": 2}  # 运算符优先级
@@ -170,11 +217,11 @@ def evaluate(expression: str) -> float:
     return val_stack.pop()
 
 
-# ---------------------------------------------------------------------------
-# 交互式 REPL
-# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    """
+    测试
+    """
     while True:
         try:
             expr = input("> ")

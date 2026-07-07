@@ -133,6 +133,8 @@ class Client:
         try:
             while True:
                 message = input()
+                sys.stdout.write("> ")
+                sys.stdout.flush()
                 if message.strip():
                     self.socket.send(message.encode("utf-8"))
                     if message == "/quit":
