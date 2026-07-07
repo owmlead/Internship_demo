@@ -9,9 +9,8 @@
 
 import os
 import time
-from typing import Any, Callable, Type, TypeVar
 
-F = TypeVar("F", bound=Callable[..., Any])
+
 
 
 def _current_timestamp() -> str:
@@ -69,7 +68,7 @@ def log_func(num_times: int = 1):
     成功时日志包含返回值；失败时记录异常并重新抛出。
     """
 
-    def decorator(func: Callable):
+    def decorator(func):
         def wrapper(*args, **kwargs):
             last_result = None
             for _ in range(num_times):
@@ -92,7 +91,7 @@ def log_func(num_times: int = 1):
     return decorator
 
 
-def log_class(cls: Type):
+def log_class(cls):
     """装饰器：记录类实例化和每次属性访问。"""
 
     class Wrapper:

@@ -12,7 +12,7 @@ import click
 from loguru import logger
 from pydantic import ValidationError, validate_call
 
-logger.add("log/log_cil.log", rotation="500 MB", retention="10 days")
+logger.add("log/log.log", rotation="500 MB", retention="10 days")
 
 
 def _count_operations(replace: str | None, prefix: str | None, suffix: str | None) -> int:

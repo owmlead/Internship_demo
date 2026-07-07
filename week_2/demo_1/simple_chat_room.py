@@ -4,7 +4,6 @@
   python simple_chat_room.py server    启动聊天服务器
   python simple_chat_room.py client    启动聊天客户端（可多个）
 
-这是一个简化的学习版本 — 完整 TCP/UDP 实现请参见 chat_room.py。
 """
 
 import os
@@ -61,7 +60,6 @@ class Server:
             client.send(
                 f"欢迎 {nickname}！输入 /quit 退出，/list 查看在线用户\n".encode("utf-8")
             )
-
             while True:
                 data = client.recv(BUFFER_SIZE)
                 if not data:
@@ -74,7 +72,7 @@ class Server:
                         users = ", ".join(self.clients.values())
                     client.send(f"  在线用户: {users}\n".encode("utf-8"))
                 else:
-                    self.broadcast(f"[{nickname}]: {message}")
+                    self.broadcast(f"[{nickname}]: {message}",client)
         except (ConnectionResetError, ConnectionAbortedError, OSError):
             pass
         finally:
@@ -162,7 +160,6 @@ class Client:
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print(__doc__)
         sys.exit(0)
 
     mode = sys.argv[1].lower()
@@ -172,4 +169,3 @@ if __name__ == "__main__":
         Client().start()
     else:
         print(f"未知模式: {mode}")
-        print(__doc__)
