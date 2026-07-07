@@ -7,25 +7,25 @@ app = FastAPI()
 
 @app.get("/")
 def read_root() -> dict[str, str]:
-    """根端点，返回问候语。"""
+    """get不带参数测试"""
     return {"Hello": "World"}
 
 
 @app.get("/users/{user_id}")
 def read_user(user_id: int, q: str | None = None) -> dict[str, int | str | None]:
-    """按 ID 获取条目，支持可选的查询参数。"""
+    """get带参数请求测试"""
     return {"item_id": user_id, "q": q}
 
 
 @app.post("/")
 def read_post(response: Response) -> dict[str, int | str | None] :
-    """"""
+    """post请求测试"""
 
     return {"message": "POST received"}
 
 @app.head("/")
 def read_head() -> Response:
-    """"""
+    """head请求测试"""
     return Response(
         content="",
         headers={"X-Resource-Exists": "" , "Content-Length": "1024"}
