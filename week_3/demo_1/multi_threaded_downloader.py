@@ -10,12 +10,18 @@ import requests
 class DownLoader:
     """管理下载操作类"""
 
-    def __init__(self, url, save_path, num_thread=4):
-        self.lock = threading.Lock()
-        self.url = url
-        self.save_path = save_path
-        self.num_thread = num_thread
-        self.chunk_size=1024*1024
+    def __init__(self, url:str, save_path:str, num_thread:int=4)->None:
+        """
+        初始化变量
+        :param url: 下载地址
+        :param save_path: 保存路径
+        :param num_thread: 线程数
+        """
+        self.lock = threading.Lock() #锁,防止多个进程同时修改进度条
+        self.url = url               #下载地址
+        self.save_path = save_path   #保存路径
+        self.num_thread = num_thread #进程数
+        self.chunk_size=1024*1024    #文件一次写入大小
         try:
             response = requests.head(url, timeout=10)
             response.raise_for_status()
@@ -26,7 +32,11 @@ class DownLoader:
         if self.total_size <= 0:
             logger.warning("无法获取文件大小，将使用单线程下载（无法断点续传）")
 
-    def download(self):
+    def download(self)->None:
+        """
+        启动下载器
+        :return:None
+        """
         if os.path.exists(self.save_path):
             local_size = os.path.getsize(self.save_path)
             if local_size >= self.total_size:
@@ -39,7 +49,16 @@ class DownLoader:
         else:
             self._multi_thread(local_size)
 
-    def _single_thread(self, local_size=0, start=0, end=0, path=None, shared_pbar=None):
+    def _single_thread(self, local_size:int=0, start:int=0, end:int=0, path:str|None=None, shared_pbar:tqdm|None=None)->None:
+        """
+        单线程下载/分快下载
+        :param local_size: 本地大小
+        :param start: 开始位置
+        :param end: 结束位置
+        :param path: 文件保存路径
+        :param shared_pbar: 全局进度条
+        :return:None
+        """
         header = {"Range": f"bytes={local_size + start}-{end if end else ''}"}
         try:
             response = requests.get(self.url, stream=True, headers=header)
@@ -60,8 +79,12 @@ class DownLoader:
                     with self.lock:
                         shared_pbar.update(len(chunk))
 
-    def _multi_thread(self, local_size):
-
+    def _multi_thread(self, local_size:int)->None:
+        """
+        多线程下载
+        :param local_size: 本地大小
+        :return: None
+        """
         part_size = int((self.total_size - local_size) / self.num_thread)
         if part_size == 0:
             self._single_thread(local_size)
@@ -94,7 +117,15 @@ class DownLoader:
                 os.remove(part_file)
         logger.success("下载完成")
 
-    def _download_part(self, path, start, end, pbar):
+    def _download_part(self, path:str, start:int, end:int, pbar:tqdm)->None:
+        """
+        分块下载线程
+        :param path: 保存地址
+        :param start: 开始位置
+        :param end: 结束位置
+        :param pbar: 全局进度条
+        :return: None
+        """
         expected_size = end - start + 1
         local_size = 0
         max_retries = 3
@@ -122,7 +153,7 @@ class DownLoader:
 
 if __name__ == "__main__":
     test_url = "https://samplefile.com/samples/download/document/csv/csv_sample_file_25MB.csv/?utm_source=samplefile&utm_medium=large_detail&utm_campaign=file_download"
-    test_save_path = "E:/test/test.e"
+    test_save_path = "E:/test/test.ccc"
     test_num_thread = 4
     downloader = DownLoader(test_url, test_save_path, test_num_thread)
     downloader.download()
