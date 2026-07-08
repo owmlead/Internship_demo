@@ -81,5 +81,5 @@ class HashCalculator:
 
 
 if __name__ == "__main__":
-    x=HashCalculator("E:/test/test.ccc")
+    x=HashCalculator("E:/test")
     x.get_hash()
