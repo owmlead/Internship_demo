@@ -7,6 +7,10 @@ from loguru import logger
 import requests
 
 
+#配置日志
+os.makedirs("./log", exist_ok=True)
+logger.add("log/log.log", rotation="500 MB", retention="10 days")
+
 class DownLoader:
     """管理下载操作类"""
 
