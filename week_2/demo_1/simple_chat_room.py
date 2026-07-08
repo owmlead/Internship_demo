@@ -193,9 +193,9 @@ class Client:
                 if not data:
                     logger.info("与服务器断开连接")
                     break
-                sys.stdout.write("\r\033[K" + data.decode("utf-8") + "\n")
-                sys.stdout.write("> ")
-                sys.stdout.flush()
+                print("\r\033[K" + data.decode("utf-8") )
+                print("> ")
+                # sys.stdout.flush()
             except (ConnectionResetError, OSError):
                 break
         os._exit(0)
