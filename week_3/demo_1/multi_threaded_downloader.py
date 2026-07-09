@@ -25,7 +25,7 @@ class DownLoader:
         self.url = url               #下载地址
         self.save_path = save_path   #保存路径
         self.num_thread = num_thread #进程数
-        self.chunk_size=1024*1024    #文件一次写入大小
+        self.chunk_size = 1024*1024    #文件一次写入大小
         try:
             response = requests.head(url, timeout=10)
             response.raise_for_status()

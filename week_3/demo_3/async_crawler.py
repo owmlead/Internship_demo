@@ -39,13 +39,30 @@ def header_x():
 
 
 class CrawLer:
+    """
+    爬虫类
+    """
     def __init__(self, url, save_path, page_start=1, page_end=2):
+        """
+        初始化爬虫
+        :param url: 要爬的地址
+        :param save_path: 存储的路径
+        :param page_start: 开始的页数
+        :param page_end: 结束的页数
+        """
         self.url = url
         self.save_path = save_path
         self.page_start = page_start
         self.page_end = page_end
 
-    async def fetch_url(self, session, url, semaphore):
+    async def fetch_url(self, session, url, semaphore)->list:
+        """
+        爬取单个页面,交给get_data方法处理,如何反回数据列表
+        :param session: 分配到的会话线程
+        :param url: 爬取的URL
+        :param semaphore: 信号量
+        :return: 数据列表
+        """
         async with semaphore:
             try:
                 await asyncio.sleep(random.uniform(5, 8))
@@ -56,7 +73,11 @@ class CrawLer:
                 print(f"error: {str(e)}")
                 return []
 
-    async def start(self):
+    async def start(self)->None:
+        """
+        启动人口
+        :return: None
+        """
         resolver = aiohttp.resolver.ThreadedResolver()
         connector = aiohttp.TCPConnector(limit_per_host=3, resolver=resolver)
         semaphore = asyncio.Semaphore(3)
@@ -84,7 +105,12 @@ class CrawLer:
                 print("没有成功获取到任何电影数据")
 
     @staticmethod
-    async def get_data(html_text):
+    async def get_data(html_text)->list:
+        """
+        进行数据清洗
+        :param html_text: 爬取的页面
+        :return: 数据列表
+        """
         document = html.fromstring(html_text)
         # name = document.xpath("//*[@id='wrapper']/h1/span/text()")
         #
@@ -149,6 +175,11 @@ class CrawLer:
 
     # 上传数据到文件
     def up_data(self, movie_data):
+        """
+        上传数据到文件
+        :param movie_data: 需要上传数据
+        :return: None
+        """
         if not movie_data:
             return
         if not os.path.exists(os.path.dirname(self.save_path)):
@@ -160,12 +191,22 @@ class CrawLer:
 
     # 读取文件数据
     def read_data(self):
+        """
+        读取文件数据
+        :return: 读取到的数据列表
+        """
         with open(self.save_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             return list(reader)
 
     # 获取电影url数据
     async def get_page_num(self, page, session):
+        """
+        处理分页数据
+        :param page: 页数
+        :param session: 会话
+        :return: 页数连接
+        """
         # 发送请求，获取数据
         url = f"{URL}{page}/"
         # await asyncio.sleep(random.uniform(1, 3))

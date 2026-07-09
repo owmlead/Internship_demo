@@ -11,12 +11,25 @@ logger.add("log/log.log", rotation="500 MB", retention="10 days")
 
 
 class HashCalculator:
+    """哈希类,主要作用把文件哈希值算出来"""
     def __init__(self,path,num_process=4):
+        """
+        初始化哈希类
+        :param path: 要哈希的文件或者目录路径
+        :param num_process: 进程数
+        """
         self.path = path
         self.num_process = num_process
 
     @staticmethod
-    def get_hash_single(path,start=0,size=None):
+    def get_hash_single(path,start=0,size=None)->str:
+        """
+        单独将文件进行哈希,从start位置进行,每次哈希size字节
+        :param path: 文件路径
+        :param start: 开始位置
+        :param size: 每次哈希大小,默认值为4096*2
+        :return: 16进制哈希数
+        """
         sha256=hashlib.sha256()
         with open(path,'rb') as f:
             f.seek(start)
@@ -34,7 +47,11 @@ class HashCalculator:
                     chunk -= len(data)
         return sha256.hexdigest()
 
-    def get_hash_large_file(self):
+    def get_hash_large_file(self)->str:
+        """
+        将大文件进行哈希,因为sha256算法不支持分快哈希,所以没有用进程
+        :return: 16进制哈希数
+        """
         file_size=os.path.getsize(self.path)
         # chunk_size=file_size//self.num_process
         # with Pool(self.num_process) as pool:
@@ -50,7 +67,11 @@ class HashCalculator:
         # return final_hash
         return self.get_hash_single(self.path, 0, file_size)
 
-    def get_hash_many_file(self):
+    def get_hash_many_file(self)->dict:
+        """
+        将一个目录下的所有文件进行哈希
+        :return: 字典{文件名:哈希数,文件名:哈希数,....}
+        """
         file_hash_dict = {}
         result=[]
         with Pool(self.num_process) as pool:
@@ -64,7 +85,11 @@ class HashCalculator:
         return file_hash_dict
 
 
-    def get_hash(self):
+    def get_hash(self)->None:
+        """
+        程序进入接口
+        :return: None
+        """
         if not os.path.exists(self.path):
             logger.error(f"{self.path}路径不存在")
         elif os.path.isdir(self.path):
